@@ -9,7 +9,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     useEffect(() => {
         setMounted(true);
         if (typeof window !== "undefined") {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("accessToken");
             if (!token) {
                 router.replace("/auth");
             }
