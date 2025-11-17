@@ -253,7 +253,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto border rounded-lg">
-            <table className="w-full">
+            <table className="w-full text-left">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="p-2">Title</th>
