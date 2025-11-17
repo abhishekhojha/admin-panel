@@ -95,6 +95,35 @@ export const fetchProductsApi = async (query: string) => {
   return response.data;
 }
 
+// Variant service
+export const fetchVariantsApi = async (productId: string) => {
+  const response = await axoios.get(`${ENDPOINTS.PRODUCTS}/${productId}/variants`);
+  return response.data;
+}
+
+export const fetchVariantByIdApi = async (variantId: string) => {
+  const response = await axoios.get(`${ENDPOINTS.PRODUCTS}/variant/${variantId}`);
+  return response.data;
+}
+
+export const createVariantApi = async (productId: string, variantData: any) => {
+  const response = await axoios.post(`${ENDPOINTS.PRODUCTS}/${productId}/variant`, variantData);
+  return response.data;
+}
+
+export const updateVariantApi = async (variantId: string, variantData: any) => {
+  const response = await axoios.put(`${ENDPOINTS.PRODUCTS}/variant/${variantId}`, variantData);
+  return response.data;
+}
+
+export const deleteVariantApi = async (variantId: string, productId?: string) => {
+  const url = productId
+    ? `${ENDPOINTS.PRODUCTS}/variant/${variantId}/${productId}`
+    : `${ENDPOINTS.PRODUCTS}/variant/${variantId}`;
+  const response = await axoios.delete(url);
+  return response.data;
+}
+
 export const deleteProductApi = async (id: string) => {
   const response = await axoios.delete(`${ENDPOINTS.PRODUCTS}/${id}`);
   return response.data;
