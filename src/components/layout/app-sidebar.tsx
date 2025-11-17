@@ -54,6 +54,7 @@ const data = {
       title: "Ecommerce",
       url: "#",
       icon: ShoppingBag,
+      isActive: true,
       items: [
         {
           title: "Categories",
@@ -62,6 +63,10 @@ const data = {
         {
           title: "Products",
           url: "/products",
+        },
+        {
+          title: "Orders",
+          url: "/orders",
         },
       ],
     },
@@ -153,13 +158,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="#">
+              <Link href="/">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   {/* <span className="truncate font-medium"></span> */}
-                  <span className="truncate text-xs">Enterprise</span>
+                  Dashboard
                 </div>
               </Link>
             </SidebarMenuButton>

@@ -14,7 +14,7 @@ export default function AuthFlow() {
 
   useEffect(() => {
     if (user && user.isProfileCompleted) {
-      router.replace('/dash');
+      router.replace('/');
     }
   }, [user, router]);
 

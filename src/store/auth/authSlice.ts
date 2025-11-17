@@ -19,6 +19,7 @@ if (typeof window !== "undefined") {
   if (persistedAccessToken) {
     try {
       const user: any = jwtDecode(persistedAccessToken);
+      
       persistedUser = {
         userId: user.userId,
         name: user.name,
