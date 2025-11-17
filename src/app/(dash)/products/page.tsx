@@ -295,13 +295,13 @@ export default function ProductsPage() {
                         <Trash2 size={16} />
                       </Button>
 
-                      <Button
+                      {/* <Button
                         size="icon"
                         variant="outline"
                         onClick={() => openVariantModal(p)}
                       >
                         <Plus size={16} />
-                      </Button>
+                      </Button> */}
                     </td>
                   </tr>
                 ))}
