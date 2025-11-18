@@ -55,17 +55,18 @@ export default function EditProductPage() {
       try {
         const data = await fetchProductByIdApi(id as string);
         const product = data.product;
-        setForm({ 
-            title: product.title,
-            brand: product.brand || "",
-            category: product.category._id,
-            price: product.price,
-            discountPrice: product.discountPrice || "",
-            stock: product.stock,
-            excerpt: product.excerpt || "",
-            images: product.images || [],
-            description: product.description || "",
-         });
+        setForm({
+          title: product.title,
+          slug: product.slug || "",
+          brand: product.brand || "",
+          category: product.category._id,
+          price: product.price,
+          discountPrice: product.discountPrice || "",
+          stock: product.stock,
+          excerpt: product.excerpt || "",
+          images: product.images || [],
+          description: product.description || "",
+        });
         // Set editor content for rich text
         setTimeout(() => {
           if (editorRef.current) {
@@ -188,15 +189,18 @@ export default function EditProductPage() {
           : undefined,
         stock: Number(form.stock),
         description,
+        slug: form.slug,
       };
       await updateProductApi(id as string, payload);
       toast.success("Product updated successfully");
     } catch (err: any) {
-      toast.error(err.message || "Failed to update product");
+      const errors = err.response?.data?.errors;
+      
+      toast.error(errors?.join(", ") || "Failed to update product");
     }
     setSaving(false);
   };
-  
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -220,12 +224,20 @@ export default function EditProductPage() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-        <Label htmlFor="title">Title</Label>
+          <Label htmlFor="title">Title</Label>
           <Input
             id="title"
             name="title"
             placeholder="Title"
             value={form.title}
+            onChange={handleInput}
+          />
+          <Label htmlFor="slug">Slug</Label>
+          <Input
+            id="slug"
+            name="slug"
+            placeholder="Slug (SEO-friendly URL)"
+            value={form.slug}
             onChange={handleInput}
           />
           <Label htmlFor="brand">Brand</Label>
