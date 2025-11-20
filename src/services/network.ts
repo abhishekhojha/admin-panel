@@ -54,7 +54,7 @@ export const deleteCategoryApi = async (id: string) => {
 }
 
 // user service
-export const fetchUsersApi = async (query:string) => {
+export const fetchUsersApi = async (query: string) => {
   const response = await axoios.get(`${ENDPOINTS.USERS}${query}`);
   return response.data;
 }
@@ -141,5 +141,26 @@ export const updateProductApi = async (id: string, productData: any) => {
 
 export const fetchProductByIdApi = async (id: string) => {
   const response = await axoios.get(`${ENDPOINTS.PRODUCTS}/${id}`);
+  return response.data;
+}
+
+// Order service
+export const fetchOrdersApi = async (query: string) => {
+  const response = await axoios.get(`${ENDPOINTS.ORDERS}${query}`);
+  return response.data;
+}
+
+export const fetchOrderByIdApi = async (id: string) => {
+  const response = await axoios.get(`${ENDPOINTS.ORDERS}/${id}`);
+  return response.data;
+}
+
+export const updateOrderStatusApi = async (id: string, statusData: any) => {
+  const response = await axoios.put(`${ENDPOINTS.ORDERS}/${id}/status`, statusData);
+  return response.data;
+}
+
+export const deleteOrderApi = async (id: string) => {
+  const response = await axoios.delete(`${ENDPOINTS.ORDERS}/${id}`);
   return response.data;
 }

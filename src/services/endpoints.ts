@@ -7,4 +7,5 @@ export const ENDPOINTS = {
     USERS: "/users",
     UPLOAD: "/upload",
     PRODUCTS: "/products",
+    ORDERS: "/orders",
 };
