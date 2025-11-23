@@ -126,7 +126,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
-      className="top-0 h-[100svh]! border-r bg-sidebar-background"
+      className="top-0 h-[100svh]! bg-sidebar-background"
       variant="inset"
       {...props}
     >
