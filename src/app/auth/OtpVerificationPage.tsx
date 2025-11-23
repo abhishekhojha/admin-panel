@@ -1,34 +1,54 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { verifyOtp } from "../../store/auth";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { verifyOtp, sendOtp } from "../../store/auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 export default function OtpVerificationPage() {
   const dispatch = useAppDispatch();
   const { loading, error, identifier } = useAppSelector((state) => state.auth);
-  const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
-  const inputsRef = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+  const [otpValue, setOtpValue] = useState("");
 
   const handleVerify = () => {
-    const otp = otpDigits.join("");
-    dispatch(verifyOtp({ identifier, otp }));
+    dispatch(verifyOtp({ identifier, otp: otpValue }));
   };
+
+  const handleResend = () => {
+    dispatch(sendOtp(identifier));
+  };
+
+  // Fallback for simple input if InputOTP is not available or complex to setup quickly without installing
+  // But since we want premium, let's try to use a clean 4-digit input or the shadcn one if available.
+  // The user didn't explicitly ask for input-otp component installation, so I will stick to a clean custom implementation or standard inputs to be safe,
+  // OR use the existing logic but styled better.
+  // Actually, I'll stick to the existing logic but style it much better to look like a proper OTP input.
+
+  const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
+  const inputsRef = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
 
   const handleChange = (index: number, value: string) => {
     if (!/^[0-9]?$/.test(value)) return;
     const newDigits = [...otpDigits];
     newDigits[index] = value;
     setOtpDigits(newDigits);
+
+    // Update combined value for submission
+    const combined = newDigits.join("");
+    setOtpValue(combined);
+
     if (value && index < 3) {
       inputsRef[index + 1].current?.focus();
     }
@@ -37,53 +57,69 @@ export default function OtpVerificationPage() {
     }
   };
 
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      inputsRef[index - 1].current?.focus();
+    }
+  };
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <Card className="w-full max-w-md shadow-lg border-0">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">Verify OTP</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6 text-center text-gray-700">
-            <div className="mb-2">We sent a one-time password to <span className="font-semibold">{identifier}</span>.</div>
-            <div className="text-sm text-gray-500">Enter the code to continue.</div>
-          </div>
-          <div className="flex justify-center gap-2 mb-4">
-            {otpDigits.map((digit, idx) => (
-              <Input
-                key={idx}
-                ref={inputsRef[idx]}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={e => handleChange(idx, e.target.value)}
-                className="w-12 h-12 text-center text-xl font-mono border border-gray-300 rounded focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                autoFocus={idx === 0}
-              />
-            ))}
-          </div>
-          <Button
-            onClick={handleVerify}
-            disabled={loading || otpDigits.some(d => d === "")}
-            className="w-full py-2 text-lg flex items-center justify-center"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                Verifying...
-              </span>
-            ) : "Verify OTP"}
-          </Button>
-          {error && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <div className="mt-6 text-center text-xs text-gray-400">Didn't receive the code? Check your spam folder or try again.</div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <div className="flex flex-col space-y-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">Verify OTP</h1>
+        <p className="text-sm text-muted-foreground">
+          We sent a code to{" "}
+          <span className="font-medium text-foreground">{identifier}</span>
+        </p>
+      </div>
+
+      <div className="flex justify-center gap-3 my-8">
+        {otpDigits.map((digit, idx) => (
+          <Input
+            key={idx}
+            ref={inputsRef[idx]}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            value={digit}
+            onChange={(e) => handleChange(idx, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(idx, e)}
+            className="w-14 h-14 text-center text-2xl font-bold rounded-md border-input bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            autoFocus={idx === 0}
+          />
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        <Button
+          onClick={handleVerify}
+          disabled={loading || otpDigits.some((d) => d === "")}
+          className="w-full"
+          size="lg"
+        >
+          {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+          {loading ? "Verifying..." : "Verify Account"}
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={handleResend}
+          disabled={loading}
+          className="w-full text-muted-foreground hover:text-foreground"
+        >
+          Resend Code
+        </Button>
+      </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>Verification Failed</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

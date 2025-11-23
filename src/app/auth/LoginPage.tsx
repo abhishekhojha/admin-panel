@@ -7,17 +7,15 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Lock, Phone } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
@@ -36,72 +34,103 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <Card className="w-full max-w-md shadow-lg border-0">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">Welcome To Ecom Dash</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full flex mb-4">
-              <TabsTrigger value="otp" className="flex-1">OTP Login/Signup</TabsTrigger>
-              <TabsTrigger value="password" className="flex-1">Password Login</TabsTrigger>
-            </TabsList>
-            <TabsContent value="otp">
+    <div className="space-y-6">
+      <div className="flex flex-col space-y-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="text-sm text-muted-foreground">
+          Enter your credentials to access your account
+        </p>
+      </div>
+
+      <Tabs value={tab} onValueChange={setTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="otp">OTP Login</TabsTrigger>
+          <TabsTrigger value="password">Password</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="otp" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email-otp">Email or Phone</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                id="email-otp"
                 type="text"
-                placeholder="Email or Phone"
+                placeholder="name@example.com"
                 value={input}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-                className="mb-2"
+                onChange={(e) => setInput(e.target.value)}
+                className="pl-9"
               />
-              <Button
-                onClick={handleSendOtp}
-                disabled={loading || !input}
-                className="w-full mb-2 flex items-center justify-center"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                ) : null}
-                {loading ? "Sending..." : "Send OTP"}
-              </Button>
-            </TabsContent>
-            <TabsContent value="password">
+            </div>
+          </div>
+          <Button
+            onClick={handleSendOtp}
+            disabled={loading || !input}
+            className="w-full"
+          >
+            {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+            {loading ? "Sending OTP..." : "Send OTP"}
+          </Button>
+        </TabsContent>
+
+        <TabsContent value="password" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email-pass">Email or Phone</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                id="email-pass"
                 type="text"
-                placeholder="Email or Phone"
+                placeholder="name@example.com"
                 value={input}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-                className="mb-2"
+                onChange={(e) => setInput(e.target.value)}
+                className="pl-9"
               />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                id="password"
                 type="password"
-                placeholder="Password"
+                placeholder="••••••••"
                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                className="mb-2"
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-9"
               />
-              <Button
-                onClick={handlePasswordLogin}
-                disabled={loading || !input || !password}
-                className="w-full flex items-center justify-center"
-                variant="secondary"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                ) : null}
-                {loading ? "Logging in..." : "Login with Password"}
-              </Button>
-            </TabsContent>
-          </Tabs>
-          {error && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+            </div>
+          </div>
+          <Button
+            onClick={handlePasswordLogin}
+            disabled={loading || !input || !password}
+            className="w-full"
+          >
+            {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+        </TabsContent>
+      </Tabs>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>Authentication Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <p className="px-8 text-center text-sm text-muted-foreground">
+        By clicking continue, you agree to our{" "}
+        <a href="#" className="underline underline-offset-4 hover:text-primary">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a href="#" className="underline underline-offset-4 hover:text-primary">
+          Privacy Policy
+        </a>
+        .
+      </p>
     </div>
   );
 }
