@@ -1,11 +1,35 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Trash2, Pencil, Plus } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  Pencil,
+  Plus,
+  MoreHorizontal,
+  Layers,
+  Link as LinkIcon,
+} from "lucide-react";
 import CategoryDialog from "./CategoryDialog";
-import { fetchCategoriesApi, createCategoryApi, updateCategoryApi, deleteCategoryApi } from "@/services/network";
+import {
+  fetchCategoriesApi,
+  createCategoryApi,
+  updateCategoryApi,
+  deleteCategoryApi,
+} from "@/services/network";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Category {
   _id: string;
@@ -61,8 +85,19 @@ export default function CategoryPage() {
   };
 
   return (
-    <>
-      {/* DIALOG */}
+    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
+          <p className="text-muted-foreground">
+            Manage product categories and hierarchy.
+          </p>
+        </div>
+        <Button onClick={openCreateDialog} className="shadow-lg">
+          <Plus className="mr-2 h-4 w-4" /> Create Category
+        </Button>
+      </div>
+
       <CategoryDialog
         open={dialogOpen}
         setOpen={setDialogOpen}
@@ -72,12 +107,9 @@ export default function CategoryPage() {
         updateCategoryApi={updateCategoryApi}
       />
 
-      <Card className="w-full border-0 h-full">
-        <CardHeader className="flex justify-between items-center">
-          <CardTitle className="text-2xl font-bold">Category Management</CardTitle>
-          <Button onClick={openCreateDialog}>
-            <Plus className="mr-2 h-4 w-4" /> Create Category
-          </Button>
+      <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle>All Categories</CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
@@ -88,52 +120,126 @@ export default function CategoryPage() {
           )}
           {loading ? (
             <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin h-6 w-6 text-blue-500" />
+              <Loader2 className="animate-spin h-8 w-8 text-primary" />
             </div>
           ) : (
-            <div className="overflow-x-auto border rounded-lg overflow-hidden">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="p-2">Name</th>
-                    <th className="p-2">Slug</th>
-                    <th className="p-2">Parent</th>
-                    <th className="p-2">Status</th>
-                    <th className="p-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categories.map((cat) => (
-                    <tr key={cat._id} className="border-b hover:bg-gray-50 transition">
-                      <td className="p-2 font-mono">{cat.name}</td>
-                      <td className="p-2">{cat.slug}</td>
-                      <td className="p-2 text-xs text-gray-700">{cat.parent?.name || "-"}</td>
-                      <td className="p-2 text-xs font-semibold">
-                        <span className={cat.status === "active" ? "text-green-600" : "text-red-600"}>{cat.status}</span>
-                      </td>
-                      <td className="p-2 flex gap-3">
-                        <Button size="icon" variant="secondary" onClick={() => openEditDialog(cat)}>
-                          <Pencil size={16} />
-                        </Button>
-                        <Button size="icon" variant="destructive" onClick={() => handleDelete(cat._id)}>
-                          <Trash2 size={16} />
-                        </Button>
-                      </td>
+            <div className="rounded-md border bg-background">
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="[&_tr]:border-b">
+                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Name
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Slug
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Parent
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Status
+                      </th>
+                      <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                  {categories.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="text-center text-gray-500 py-10">
-                        No categories found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="[&_tr:last-child]:border-0">
+                    {categories.map((cat) => (
+                      <tr
+                        key={cat._id}
+                        className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                      >
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 rounded-lg border">
+                              <AvatarImage
+                                src={cat.image}
+                                className="object-cover"
+                              />
+                              <AvatarFallback className="rounded-lg">
+                                {cat.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{cat.name}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded w-fit">
+                            <LinkIcon className="mr-1 h-3 w-3" />
+                            {cat.slug}
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          {cat.parent ? (
+                            <div className="flex items-center text-sm">
+                              <Layers className="mr-2 h-4 w-4 text-muted-foreground" />
+                              {cat.parent.name}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">
+                              Top Level
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent ${
+                              cat.status === "active"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                            }`}
+                          >
+                            {cat.status}
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => openEditDialog(cat)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit Category
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDelete(cat._id)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Category
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))}
+                    {categories.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="h-24 text-center text-muted-foreground"
+                        >
+                          No categories found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }

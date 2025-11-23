@@ -1,10 +1,12 @@
 "use client";
+
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectTrigger,
@@ -21,10 +23,12 @@ import {
   Strikethrough,
   Heading2,
   Heading3,
-  Type,
   Heading4,
+  Type,
   Upload,
   X,
+  ChevronLeft,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   fetchProductByIdApi,
@@ -33,7 +37,8 @@ import {
   uploadImageApi,
 } from "@/services/network";
 import { toast } from "sonner";
-import { Label } from "@radix-ui/react-label";
+import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 export default function EditProductPage() {
   const { id } = useParams();
@@ -195,7 +200,6 @@ export default function EditProductPage() {
       toast.success("Product updated successfully");
     } catch (err: any) {
       const errors = err.response?.data?.errors;
-      
       toast.error(errors?.join(", ") || "Failed to update product");
     }
     setSaving(false);
@@ -204,7 +208,7 @@ export default function EditProductPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="animate-spin h-8 w-8 text-blue-500" />
+        <Loader2 className="animate-spin h-8 w-8 text-primary" />
       </div>
     );
   }
@@ -218,293 +222,396 @@ export default function EditProductPage() {
   }
 
   return (
-    <Card className="mx-auto mt-2">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Edit Product</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            name="title"
-            placeholder="Title"
-            value={form.title}
-            onChange={handleInput}
-          />
-          <Label htmlFor="slug">Slug</Label>
-          <Input
-            id="slug"
-            name="slug"
-            placeholder="Slug (SEO-friendly URL)"
-            value={form.slug}
-            onChange={handleInput}
-          />
-          <Label htmlFor="brand">Brand</Label>
-          <Input
-            id="brand"
-            name="brand"
-            placeholder="Brand"
-            value={form.brand}
-            onChange={handleInput}
-          />
-          <Label>Category</Label>
-          <Select
-            value={form.category}
-            onValueChange={(value) => setForm({ ...form, category: value })}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat._id} value={cat._id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Label htmlFor="price">Price</Label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            placeholder="Price"
-            value={form.price}
-            onChange={handleInput}
-          />
-          <Label htmlFor="discountPrice">Discount Price</Label>
-          <Input
-            id="discountPrice"
-            name="discountPrice"
-            type="number"
-            placeholder="Discount Price"
-            value={form.discountPrice}
-            onChange={handleInput}
-          />
-          <Label htmlFor="stock">Stock</Label>
-          <Input
-            id="stock"
-            name="stock"
-            type="number"
-            placeholder="Stock"
-            value={form.stock}
-            onChange={handleInput}
-          />
-          <Label htmlFor="excerpt">Excerpt</Label>
-          <Textarea
-            id="excerpt"
-            name="excerpt"
-            placeholder="Excerpt"
-            value={form.excerpt}
-            onChange={handleInput}
-            rows={3}
-          />
-          <div>
-            <label className="block text-sm font-medium mb-1">Images</label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="flex-1"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload Image
-                    </>
-                  )}
-                </Button>
-              </div>
-              <div className="flex gap-2">
+    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+      <div className="flex items-center gap-4">
+        <Link href="/products">
+          <Button variant="outline" size="icon">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
+          <p className="text-muted-foreground">Update product details.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Main Info */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Product Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
                 <Input
-                  placeholder="Or paste image URL"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleAddImageUrl()}
+                  id="title"
+                  name="title"
+                  placeholder="Product Title"
+                  value={form.title}
+                  onChange={handleInput}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleAddImageUrl}
-                >
-                  Add
-                </Button>
               </div>
-              {form.images?.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-2">
-                  {form.images.map((img: any, index: number) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={img.url}
-                        alt={`Product ${index + 1}`}
-                        className="w-full h-[230px] object-cover rounded border"
-                      />
-                      {img.isPrimary && (
-                        <span className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded">
-                          Primary
-                        </span>
-                      )}
-                      {!img.isPrimary && (
-                        <button
-                          type="button"
-                          onClick={() => handleSetPrimaryImage(index)}
-                          className="absolute top-1 left-1 bg-gray-500 text-white text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          Set Primary
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug</Label>
+                <Input
+                  id="slug"
+                  name="slug"
+                  placeholder="Slug (SEO-friendly URL)"
+                  value={form.slug}
+                  onChange={handleInput}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="brand">Brand</Label>
+                  <Input
+                    id="brand"
+                    name="brand"
+                    placeholder="Brand Name"
+                    value={form.brand}
+                    onChange={handleInput}
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Description
-            </label>
-            <div className="border rounded">
-              <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("bold");
-                  }}
-                >
-                  <Bold className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("italic");
-                  }}
-                >
-                  <Italic className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("underline");
-                  }}
-                >
-                  <Underline className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("strikethrough");
-                  }}
-                >
-                  <Strikethrough className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-8 bg-gray-300 mx-1" />
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("formatBlock", "p");
-                  }}
-                >
-                  <Type className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("formatBlock", "h2");
-                  }}
-                >
-                  <Heading2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("formatBlock", "h3");
-                  }}
-                >
-                  <Heading3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    toggleFormat("formatBlock", "h4");
-                  }}
-                >
-                  <Heading4 className="h-4 w-4" />
-                </Button>
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(value) =>
+                      setForm({ ...form, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div
-                ref={editorRef}
-                contentEditable
-                className="px-3 py-2 min-h-[200px] text-sm bg-white focus:outline-none editor max-h-70 overflow-y-auto"
-                suppressContentEditableWarning
-              />
-            </div>
-          </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="excerpt">Excerpt</Label>
+                <Textarea
+                  id="excerpt"
+                  name="excerpt"
+                  placeholder="Short summary of the product"
+                  value={form.excerpt}
+                  onChange={handleInput}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <div className="border rounded-md overflow-hidden">
+                  <div className="flex flex-wrap gap-1 p-2 border-b bg-muted/50">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggleFormat("bold");
+                      }}
+                    >
+                      <Bold className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggleFormat("italic");
+                      }}
+                    >
+                      <Italic className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggleFormat("underline");
+                      }}
+                    >
+                      <Underline className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggleFormat("strikethrough");
+                      }}
+                    >
+                      <Strikethrough className="h-4 w-4" />
+                    </Button>
+                    <Separator orientation="vertical" className="h-6 mx-1" />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggleFormat("formatBlock", "p");
+                      }}
+                    >
+                      <Type className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggleFormat("formatBlock", "h2");
+                      }}
+                    >
+                      <Heading2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        toggleFormat("formatBlock", "h3");
+                      }}
+                    >
+                      <Heading3 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div
+                    ref={editorRef}
+                    contentEditable
+                    className="p-4 min-h-[200px] text-sm focus:outline-none prose prose-sm max-w-none dark:prose-invert"
+                    suppressContentEditableWarning
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Media</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Paste image URL"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleAddImageUrl()
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={handleAddImageUrl}
+                      >
+                        Add URL
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-sm text-muted-foreground px-2">
+                      OR
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-dashed"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload from Device
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {form.images?.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    {form.images.map((img: any, index: number) => (
+                      <div
+                        key={index}
+                        className="relative group rounded-lg overflow-hidden border bg-background aspect-square"
+                      >
+                        <img
+                          src={img.url}
+                          alt={`Product ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          {!img.isPrimary && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="h-7 text-xs"
+                              onClick={() => handleSetPrimaryImage(index)}
+                            >
+                              Set Primary
+                            </Button>
+                          )}
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            className="h-7 w-7"
+                            onClick={() => handleRemoveImage(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {img.isPrimary && (
+                          <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                            Primary
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 border-2 border-dashed rounded-lg bg-muted/30">
+                    <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      No images added yet
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Pricing & Inventory */}
+        <div className="space-y-6">
+          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Pricing</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="price">Base Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-muted-foreground">
+                    ₹
+                  </span>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    placeholder="0.00"
+                    className="pl-7"
+                    value={form.price}
+                    onChange={handleInput}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="discountPrice">Discount Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-muted-foreground">
+                    ₹
+                  </span>
+                  <Input
+                    id="discountPrice"
+                    name="discountPrice"
+                    type="number"
+                    placeholder="0.00"
+                    className="pl-7"
+                    value={form.discountPrice}
+                    onChange={handleInput}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Inventory</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="stock">Stock Quantity</Label>
+                <Input
+                  id="stock"
+                  name="stock"
+                  type="number"
+                  placeholder="0"
+                  value={form.stock}
+                  onChange={handleInput}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Button className="w-full" disabled={saving} onClick={handleSave}>
-            {saving && <Loader2 className="animate-spin mr-2 h-4 w-4" />} Update
-            Product
-          </Button>
+
+          <div className="flex flex-col gap-3">
+            <Button
+              size="lg"
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full"
+            >
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Update Product
+            </Button>
+            <Link href="/products">
+              <Button variant="outline" size="lg" className="w-full">
+                Cancel
+              </Button>
+            </Link>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

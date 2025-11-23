@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
   ShoppingCart,
   Truck,
@@ -13,9 +12,13 @@ import {
   ChevronRight,
   Trash2,
   Eye,
+  Search,
+  Filter,
+  MoreHorizontal,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -24,19 +27,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
   fetchOrdersApi,
   updateOrderStatusApi,
   deleteOrderApi,
 } from "@/services/network";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface Order {
   _id: string;
@@ -51,15 +63,15 @@ interface Order {
 function statusIcon(status: string) {
   switch (status) {
     case "pending":
-      return <Clock className="text-yellow-500" size={18} />;
+      return <Clock className="text-yellow-500" size={16} />;
     case "processing":
-      return <Clock className="text-orange-500" size={18} />;
+      return <Clock className="text-orange-500" size={16} />;
     case "shipped":
-      return <Truck className="text-blue-500" size={18} />;
+      return <Truck className="text-blue-500" size={16} />;
     case "delivered":
-      return <BadgeCheck className="text-green-500" size={18} />;
+      return <BadgeCheck className="text-green-500" size={16} />;
     case "cancelled":
-      return <XCircle className="text-red-500" size={18} />;
+      return <XCircle className="text-red-500" size={16} />;
     default:
       return null;
   }
@@ -115,103 +127,67 @@ export default function OrderPage() {
     }
   };
 
+  const resetFilters = () => {
+    setStatusFilter("all");
+    setPage(1);
+  };
+
   return (
-    <div className="p-4 space-y-6 min-h-screen">
-      <div className="flex items-center gap-4 mb-4">
-        <ShoppingCart className="text-green-600" size={32} />
+    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="text-2xl font-bold text-blue-700">
-            Orders Overview
-          </div>
-          <div className="text-sm text-gray-500">
+          <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
+          <p className="text-muted-foreground">
             Track and manage all your store orders here.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
+            Total Orders:{" "}
+            <span className="font-semibold text-foreground">{totalOrders}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-600">Total Orders: {totalOrders}</div>
-        <Select
-          value={statusFilter}
-          onValueChange={(val) => {
-            setStatusFilter(val);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="shipped">Shipped</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Card className="mt-4 shadow-md">
-        <CardHeader>
-          <CardTitle>Recent Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin h-8 w-8 text-blue-500" />
+      <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full md:w-96">
+              {/* Placeholder for search if needed later, currently just title */}
+              <CardTitle>Recent Orders</CardTitle>
             </div>
-          ) : error ? (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : (
-            <div className="overflow-x-auto border rounded-lg">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="p-2">Order ID</th>
-                    <th className="p-2">Customer</th>
-                    <th className="p-2">Total</th>
-                    <th className="p-2">Status</th>
-                    <th className="p-2">Payment</th>
-                    <th className="p-2">Shipping</th>
-                    <th className="p-2">Date</th>
-                    <th className="p-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order) => (
-                    <tr
-                      key={order._id}
-                      className="border-b hover:bg-gray-50 transition"
-                    >
-                      <td className="p-2 font-mono text-xs">
-                        {order._id.substring(0, 8)}...
-                      </td>
-                      <td className="p-2 text-sm">
-                        {typeof order.user === "object"
-                          ? order.user.name
-                          : "Unknown"}
-                      </td>
-                      <td className="p-2 text-sm font-semibold">
-                        ₹{order.grandTotal}
-                      </td>
-                      <td className="p-2">
+
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              {/* Mobile Filter Sheet */}
+              <div className="md:hidden w-full">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <Filter className="mr-2 h-4 w-4" /> Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>Filters</SheetTitle>
+                      <SheetDescription>
+                        Filter orders by status
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex flex-col gap-4 mt-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Status</label>
                         <Select
-                          defaultValue={order.status}
-                          onValueChange={(val) =>
-                            handleStatusUpdate(order._id, val)
-                          }
+                          value={statusFilter}
+                          onValueChange={(val) => {
+                            setStatusFilter(val);
+                            setPage(1);
+                          }}
                         >
-                          <SelectTrigger className="h-8 text-xs w-[130px]">
-                            <div className="flex items-center gap-2">
-                              {statusIcon(order.status)}
-                              <span className="capitalize">{order.status}</span>
-                            </div>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Status" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="processing">
                               Processing
@@ -221,69 +197,233 @@ export default function OrderPage() {
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
-                      </td>
-                      <td className="p-2 text-xs">{order.payment.method}</td>
-                      <td className="p-2 text-xs">{order.shipping.method}</td>
-                      <td className="p-2 text-xs">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="p-2 flex gap-2">
-                        <Link href={`/orders/${order._id}`}>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-8 w-8"
-                          >
-                            <Eye size={14} />
-                          </Button>
-                        </Link>
-                        <Button
-                          size="icon"
-                          variant="destructive"
-                          className="h-8 w-8"
-                          onClick={() => handleDelete(order._id)}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                  {orders.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        className="text-center py-8 text-gray-500"
+                      </div>
+                      <Button
+                        variant="secondary"
+                        onClick={resetFilters}
+                        className="mt-4"
                       >
-                        No orders found
-                      </td>
+                        Reset Filters
+                      </Button>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+
+              {/* Desktop Filters */}
+              <div className="hidden md:flex gap-2 items-center">
+                <Select
+                  value={statusFilter}
+                  onValueChange={(val) => {
+                    setStatusFilter(val);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-[180px] bg-background">
+                    <SelectValue placeholder="Filter by Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="shipped">Shipped</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {statusFilter !== "all" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={resetFilters}
+                    title="Reset Filters"
+                  >
+                    <XCircle className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            </div>
+          ) : error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : (
+            <div className="rounded-md border bg-background">
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="[&_tr]:border-b">
+                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Order ID
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Customer
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Total
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Status
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Payment
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Date
+                      </th>
+                      <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
+                        Actions
+                      </th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="[&_tr:last-child]:border-0">
+                    {orders.map((order) => (
+                      <tr
+                        key={order._id}
+                        className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                      >
+                        <td className="p-4 align-middle font-mono text-xs">
+                          {order._id.substring(0, 8)}...
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {typeof order.user === "object"
+                                ? order.user.name
+                                : "Unknown"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {typeof order.user === "object"
+                                ? order.user.email
+                                : ""}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle font-semibold">
+                          ₹{order.grandTotal}
+                        </td>
+                        <td className="p-4 align-middle">
+                          <Select
+                            defaultValue={order.status}
+                            onValueChange={(val) =>
+                              handleStatusUpdate(order._id, val)
+                            }
+                          >
+                            <SelectTrigger className="h-8 w-[140px] border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:ring-0 focus:ring-offset-0">
+                              <div className="flex items-center gap-2">
+                                {statusIcon(order.status)}
+                                <span className="capitalize text-xs font-semibold">
+                                  {order.status}
+                                </span>
+                              </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="processing">
+                                Processing
+                              </SelectItem>
+                              <SelectItem value="shipped">Shipped</SelectItem>
+                              <SelectItem value="delivered">
+                                Delivered
+                              </SelectItem>
+                              <SelectItem value="cancelled">
+                                Cancelled
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium capitalize">
+                              {order.payment.method}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground capitalize">
+                              {order.shipping.method}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle text-xs text-muted-foreground">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-4 align-middle text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <Link href={`/orders/${order._id}`}>
+                                <DropdownMenuItem>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDelete(order._id)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Order
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))}
+                    {orders.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="h-24 text-center text-muted-foreground"
+                        >
+                          No orders found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {/* Pagination */}
-          <div className="flex justify-end items-center gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-            >
-              <ChevronLeft size={16} /> Previous
-            </Button>
-            <span className="text-sm text-gray-600">
+          <div className="flex items-center justify-between space-x-2 py-4">
+            <div className="text-sm text-muted-foreground">
               Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-            >
-              Next <ChevronRight size={16} />
-            </Button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
