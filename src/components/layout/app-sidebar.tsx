@@ -18,6 +18,7 @@ import {
   Shield,
   CreditCard,
   FileText,
+  Tag,
 } from "lucide-react";
 
 import { NavMain } from "@/components/layout/nav-main";
@@ -69,6 +70,11 @@ const data = {
           title: "Categories",
           url: "/categories",
           icon: Layers,
+        },
+        {
+          title: "Coupons",
+          url: "/coupons",
+          icon: Tag,
         },
       ],
     },

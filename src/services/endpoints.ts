@@ -8,4 +8,5 @@ export const ENDPOINTS = {
     UPLOAD: "/upload",
     PRODUCTS: "/products",
     ORDERS: "/orders",
+    COUPONS: "/coupons",
 };

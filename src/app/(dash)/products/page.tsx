@@ -96,6 +96,9 @@ export default function ProductsPage() {
   const [brand, setBrand] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -127,17 +130,19 @@ export default function ProductsPage() {
     setError("");
 
     try {
-      const params = [];
+      const params = [`page=${page}`, `limit=10`];
       if (search) params.push(`search=${search}`);
       if (category && category !== "all") params.push(`category=${category}`);
       if (brand) params.push(`brand=${brand}`);
       if (minPrice) params.push(`minPrice=${minPrice}`);
       if (maxPrice) params.push(`maxPrice=${maxPrice}`);
 
-      const query = params.length ? `?${params.join("&")}` : "";
+      const query = `?${params.join("&")}`;
 
       const data = await fetchProductsApi(query);
       setProducts(data.products || []);
+      setTotalPages(data.totalPages || 1);
+      setTotalProducts(data.total || 0);
     } catch {
       setError("Failed to fetch products.");
     }
@@ -147,6 +152,11 @@ export default function ProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+  }, [search, category, brand, minPrice, maxPrice, page]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
   }, [search, category, brand, minPrice, maxPrice]);
 
   // ----------------------------------------------------------------------
@@ -198,6 +208,7 @@ export default function ProductsPage() {
     setMinPrice("");
     setMaxPrice("");
     setSearch("");
+    setPage(1);
   };
 
   return (
@@ -209,11 +220,19 @@ export default function ProductsPage() {
             Manage your product catalog, inventory, and variants.
           </p>
         </div>
-        <Link href="/products/create">
-          <Button className="shadow-lg">
-            <Plus className="mr-2 h-4 w-4" /> Add New Product
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
+            Total Products:{" "}
+            <span className="font-semibold text-foreground">
+              {totalProducts}
+            </span>
+          </div>
+          <Link href="/products/create">
+            <Button className="shadow-lg">
+              <Plus className="mr-2 h-4 w-4" /> Add New Product
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
@@ -463,7 +482,7 @@ export default function ProductsPage() {
                                 onClick={() => openVariantModal(p)}
                               >
                                 <Layers className="mr-2 h-4 w-4" />
-                                Manage Variants
+                                <span className="flex-1">Manage Variants</span>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -493,6 +512,33 @@ export default function ProductsPage() {
               </div>
             </div>
           )}
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between space-x-2 py-4">
+            <div className="text-sm text-muted-foreground">
+              Page {page} of {totalPages}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1 || loading}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages || loading}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardContent>
 
         {/* ------------------------------------------------ */}

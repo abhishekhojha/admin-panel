@@ -164,3 +164,24 @@ export const deleteOrderApi = async (id: string) => {
   const response = await axoios.delete(`${ENDPOINTS.ORDERS}/${id}`);
   return response.data;
 }
+
+// coupon service
+export const fetchCouponsApi = async (query: string) => {
+  const response = await axoios.get(`${ENDPOINTS.COUPONS}${query}`);
+  return response.data;
+}
+
+export const createCouponApi = async (couponData: any) => {
+  const response = await axoios.post(ENDPOINTS.COUPONS, couponData);
+  return response.data;
+}
+
+export const updateCouponApi = async (id: string, couponData: any) => {
+  const response = await axoios.put(`${ENDPOINTS.COUPONS}/${id}`, couponData);
+  return response.data;
+}
+
+export const deleteCouponApi = async (id: string) => {
+  const response = await axoios.delete(`${ENDPOINTS.COUPONS}/${id}`);
+  return response.data;
+}
