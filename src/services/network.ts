@@ -185,3 +185,29 @@ export const deleteCouponApi = async (id: string) => {
   const response = await axoios.delete(`${ENDPOINTS.COUPONS}/${id}`);
   return response.data;
 }
+
+// section service
+export const fetchSectionsApi = async () => {
+  const response = await axoios.get(ENDPOINTS.SECTIONS);
+  return response.data;
+}
+
+export const fetchSectionByIdApi = async (id: string) => {
+  const response = await axoios.get(`${ENDPOINTS.SECTIONS}/id/${id}`);
+  return response.data;
+}
+
+export const createSectionApi = async (sectionData: any) => {
+  const response = await axoios.post(ENDPOINTS.SECTIONS, sectionData);
+  return response.data;
+}
+
+export const updateSectionApi = async (id: string, sectionData: any) => {
+  const response = await axoios.put(`${ENDPOINTS.SECTIONS}/${id}`, sectionData);
+  return response.data;
+}
+
+export const deleteSectionApi = async (id: string) => {
+  const response = await axoios.delete(`${ENDPOINTS.SECTIONS}/${id}`);
+  return response.data;
+}

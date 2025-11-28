@@ -59,7 +59,7 @@ export const getProfile = createAsyncThunk(
     try {
       const { accessToken } = (getState() as any).auth;
       if (!accessToken) return rejectWithValue("No access token");
-      const res = await axios.get("/profile", {
+      const res = await axios.get("/me", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       return res.data.user;

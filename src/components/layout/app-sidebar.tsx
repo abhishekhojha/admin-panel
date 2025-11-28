@@ -19,6 +19,7 @@ import {
   CreditCard,
   FileText,
   Tag,
+  List,
 } from "lucide-react";
 
 import { NavMain } from "@/components/layout/nav-main";
@@ -35,13 +36,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-
+import { useAppSelector } from "@/store";
+import { useDispatch } from "react-redux";
+import { getProfile } from "@/store/auth/authThunks";
+import { AppDispatch } from "@/store/store";
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -60,21 +59,31 @@ const data = {
           title: "Products",
           url: "/products",
           icon: Package,
+          permission: "MANAGE_PRODUCTS",
         },
         {
           title: "Orders",
           url: "/orders",
           icon: ShoppingCart,
+          permission: "MANAGE_ORDERS",
         },
         {
           title: "Categories",
           url: "/categories",
           icon: Layers,
+          permission: "MANAGE_CATEGORIES",
         },
         {
           title: "Coupons",
           url: "/coupons",
           icon: Tag,
+          permission: "MANAGE_COUPONS",
+        },
+        {
+          title: "Sections",
+          url: "/sections",
+          icon: List,
+          permission: "MANAGE_SECTIONS",
         },
       ],
     },
@@ -88,11 +97,13 @@ const data = {
           title: "Users",
           url: "/users",
           icon: Users,
+          permission: "MANAGE_USERS",
         },
         {
           title: "Roles",
           url: "/roles",
           icon: Shield,
+          permission: "MANAGE_ROLES",
         },
       ],
     },
@@ -130,6 +141,48 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useAppSelector((state) => state.auth);
+
+  React.useEffect(() => {
+    dispatch(getProfile());
+  }, [dispatch]);
+
+  const permissions = user?.role?.permissions || [];
+
+  const filteredNavMain = data.navMain
+    .map((section) => {
+      const filteredItems = section.items.filter((item: any) => {
+        if (!item.permission) return true;
+        if (permissions.includes("*")) return true;
+        return permissions.includes(item.permission);
+      });
+
+      // If section has items but all are filtered out, hide section?
+      // Or if section has no items originally (like Dashboard), keep it.
+      // For now, keeping section if it has items OR if it originally had no items (like Dashboard)
+      // But if it had items and they are all filtered, maybe hide it?
+      // Let's keep it simple: just filter items.
+
+      return {
+        ...section,
+        items: filteredItems,
+      };
+    })
+    .filter((section) => {
+      // Optional: Hide section if it has no items left, but only if it originally had items
+      // Dashboard has 0 items originally, so we keep it.
+      // E-commerce has items, if all filtered, we might want to hide it.
+      // For now, let's just return true to show empty sections or refine logic if needed.
+      if (
+        section.items.length === 0 &&
+        data.navMain.find((s) => s.title === section.title)?.items.length! > 0
+      ) {
+        return false;
+      }
+      return true;
+    });
+
   return (
     <Sidebar
       className="top-0 h-[100svh]! bg-sidebar-background"
@@ -158,7 +211,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={filteredNavMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
