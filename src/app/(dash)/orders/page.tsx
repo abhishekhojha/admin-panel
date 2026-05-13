@@ -16,6 +16,8 @@ import {
   MoreHorizontal,
   CreditCard,
   Pencil,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,8 +51,54 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import OrderUpdateDialog from "./OrderUpdateDialog";
 
-// Backend enum: pending | paid | shipped | delivered | cancelled
-type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "cancelled";
+// Backend enum: PENDING | CONFIRMED | PROCESSING | SHIPPED | DELIVERED | CANCELLED | REFUNDED | COMPLETED
+export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "REFUNDED" | "COMPLETED";
+
+const statusConfig: Record<
+  OrderStatus,
+  { label: string; className: string; icon: React.ReactNode }
+> = {
+  PENDING: {
+    label: "Pending",
+    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    icon: <Clock size={12} />,
+  },
+  CONFIRMED: {
+    label: "Confirmed",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    icon: <CheckCircle size={12} />,
+  },
+  PROCESSING: {
+    label: "Processing",
+    className: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
+    icon: <Truck size={12} />,
+  },
+  SHIPPED: {
+    label: "Shipped",
+    className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+    icon: <Truck size={12} />,
+  },
+  DELIVERED: {
+    label: "Delivered",
+    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    icon: <BadgeCheck size={12} />,
+  },
+  CANCELLED: {
+    label: "Cancelled",
+    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    icon: <XCircle size={12} />,
+  },
+  REFUNDED: {
+    label: "Refunded",
+    className: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+    icon: <AlertCircle size={12} />,
+  },
+  COMPLETED: {
+    label: "Completed",
+    className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+    icon: <CheckCircle size={12} />,
+  },
+};
 
 interface Order {
   _id: string;
@@ -66,35 +114,7 @@ interface Order {
 }
 
 function statusBadge(status: string) {
-  const map: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-    pending: {
-      label: "Pending",
-      className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-      icon: <Clock size={12} />,
-    },
-    paid: {
-      label: "Paid",
-      className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-      icon: <CreditCard size={12} />,
-    },
-    shipped: {
-      label: "Shipped",
-      className: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-      icon: <Truck size={12} />,
-    },
-    delivered: {
-      label: "Delivered",
-      className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-      icon: <BadgeCheck size={12} />,
-    },
-    cancelled: {
-      label: "Cancelled",
-      className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-      icon: <XCircle size={12} />,
-    },
-  };
-
-  const config = map[status] || {
+  const config = (statusConfig as any)[status] || {
     label: status,
     className: "bg-muted text-muted-foreground",
     icon: null,
@@ -218,11 +238,14 @@ export default function OrderPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="paid">Paid</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                            <SelectItem value="PENDING">Pending</SelectItem>
+                            <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                            <SelectItem value="PROCESSING">Processing</SelectItem>
+                            <SelectItem value="SHIPPED">Shipped</SelectItem>
+                            <SelectItem value="DELIVERED">Delivered</SelectItem>
+                            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                            <SelectItem value="REFUNDED">Refunded</SelectItem>
+                            <SelectItem value="COMPLETED">Completed</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -252,11 +275,14 @@ export default function OrderPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="shipped">Shipped</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="PENDING">Pending</SelectItem>
+                    <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                    <SelectItem value="PROCESSING">Processing</SelectItem>
+                    <SelectItem value="SHIPPED">Shipped</SelectItem>
+                    <SelectItem value="DELIVERED">Delivered</SelectItem>
+                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    <SelectItem value="REFUNDED">Refunded</SelectItem>
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -503,7 +529,7 @@ export default function OrderPage() {
         open={updateDialogOpen}
         onOpenChange={setUpdateDialogOpen}
         orderId={selectedOrder?._id || null}
-        currentStatus={selectedOrder?.status || "pending"}
+        currentStatus={selectedOrder?.status || "PENDING"}
         currentPaymentStatus={selectedOrder?.paymentStatus}
         onSuccess={fetchOrders}
       />

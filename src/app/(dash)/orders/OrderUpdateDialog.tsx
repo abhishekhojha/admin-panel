@@ -54,7 +54,7 @@ export default function OrderUpdateDialog({
   useEffect(() => {
     if (open) {
       setForm({
-        status: currentStatus || "pending",
+        status: currentStatus || "PENDING",
         paymentStatus: currentPaymentStatus || "",
         trackingNumber: "",
         carrier: "",
@@ -79,7 +79,7 @@ export default function OrderUpdateDialog({
       if (form.estimatedDelivery)
         payload.estimatedDelivery = new Date(form.estimatedDelivery).toISOString();
       if (form.note) payload.note = form.note;
-      if (form.status === "cancelled" && form.cancellationReason)
+      if (form.status === "CANCELLED" && form.cancellationReason)
         payload.cancellationReason = form.cancellationReason;
 
       await updateOrderStatusApi(orderId, payload);
@@ -112,11 +112,14 @@ export default function OrderUpdateDialog({
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                  <SelectItem value="PROCESSING">Processing</SelectItem>
+                  <SelectItem value="SHIPPED">Shipped</SelectItem>
+                  <SelectItem value="DELIVERED">Delivered</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  <SelectItem value="REFUNDED">Refunded</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -197,7 +200,7 @@ export default function OrderUpdateDialog({
           </div>
 
           {/* Cancellation Reason (only show when cancelling) */}
-          {form.status === "cancelled" && (
+          {form.status === "CANCELLED" && (
             <div className="space-y-2">
               <Label htmlFor="cancellationReason">Cancellation Reason</Label>
               <Textarea
