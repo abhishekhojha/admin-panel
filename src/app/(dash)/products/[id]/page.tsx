@@ -23,12 +23,13 @@ import {
   Strikethrough,
   Heading2,
   Heading3,
-  Heading4,
   Type,
   Upload,
   X,
   ChevronLeft,
   Image as ImageIcon,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import {
   fetchProductByIdApi,
@@ -64,15 +65,18 @@ export default function EditProductPage() {
           title: product.title,
           slug: product.slug || "",
           brand: product.brand || "",
-          category: product.category._id,
+          category:
+            typeof product.category === "object"
+              ? product.category._id
+              : product.category,
           price: product.price,
           discountPrice: product.discountPrice || "",
           stock: product.stock,
           excerpt: product.excerpt || "",
           images: product.images || [],
           description: product.description || "",
+          attributes: product.attributes || [],
         });
-        // Set editor content for rich text
         setTimeout(() => {
           if (editorRef.current) {
             editorRef.current.innerHTML = product.description || "";
@@ -111,18 +115,19 @@ export default function EditProductPage() {
       formData.append("image", file);
       formData.append("convertToWebp", "true");
       formData.append("folder", "products");
-      const response = await uploadImageApi(formData);
-      const imageUrl = response.data.secure_url;
-      setForm({
-        ...form,
+      // uploadImageApi now returns inner data directly (secure_url at top level)
+      const result = await uploadImageApi(formData);
+      const uploadedUrl = result.secure_url;
+      setForm((prev: any) => ({
+        ...prev,
         images: [
-          ...form.images,
-          { url: imageUrl, isPrimary: form.images.length === 0 },
+          ...prev.images,
+          { url: uploadedUrl, isPrimary: prev.images.length === 0 },
         ],
-      });
+      }));
       toast.success("Image uploaded successfully");
     } catch (error: any) {
-      toast.error(error.error || "Failed to upload image");
+      toast.error(error?.message || "Failed to upload image");
     }
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -189,21 +194,36 @@ export default function EditProductPage() {
       const payload = {
         ...form,
         price: Number(form.price),
-        discountPrice: form.discountPrice
-          ? Number(form.discountPrice)
-          : undefined,
+        discountPrice: form.discountPrice ? Number(form.discountPrice) : undefined,
         stock: Number(form.stock),
         description,
         slug: form.slug,
+        attributes: (form.attributes || []).filter(
+          (a: any) => a.key?.trim() && a.value?.trim()
+        ),
       };
       await updateProductApi(id as string, payload);
       toast.success("Product updated successfully");
     } catch (err: any) {
-      const errors = err.response?.data?.errors;
-      toast.error(errors?.join(", ") || "Failed to update product");
+      const msg = err?.response?.data?.message || "Failed to update product";
+      setError(msg);
+      toast.error(msg);
     }
     setSaving(false);
   };
+
+  // Attribute helpers
+  const addAttribute = () =>
+    setForm((prev: any) => ({ ...prev, attributes: [...(prev.attributes || []), { key: "", value: "" }] }));
+
+  const updateAttribute = (i: number, field: "key" | "value", val: string) => {
+    const updated = [...(form.attributes || [])];
+    updated[i] = { ...updated[i], [field]: val };
+    setForm((prev: any) => ({ ...prev, attributes: updated }));
+  };
+
+  const removeAttribute = (i: number) =>
+    setForm((prev: any) => ({ ...prev, attributes: prev.attributes.filter((_: any, idx: number) => idx !== i) }));
 
   if (loading) {
     return (
@@ -521,6 +541,47 @@ export default function EditProductPage() {
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Attributes Card */}
+          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Attributes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">Product-level attributes (e.g. Material, Weight).</p>
+              {(form.attributes || []).map((attr: any, i: number) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <Input
+                    placeholder="Key (e.g. Material)"
+                    value={attr.key}
+                    onChange={(e) => updateAttribute(i, "key", e.target.value)}
+                  />
+                  <Input
+                    placeholder="Value (e.g. Cotton)"
+                    value={attr.value}
+                    onChange={(e) => updateAttribute(i, "value", e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-destructive hover:bg-destructive/10"
+                    onClick={() => removeAttribute(i)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-dashed"
+                onClick={addAttribute}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Add Attribute
+              </Button>
             </CardContent>
           </Card>
         </div>

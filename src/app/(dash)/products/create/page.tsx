@@ -22,13 +22,13 @@ import {
   Strikethrough,
   Heading2,
   Heading3,
-  Heading4,
   Type,
   Upload,
   X,
   Image as ImageIcon,
   ChevronLeft,
   Plus,
+  Trash2,
 } from "lucide-react";
 import {
   createProductApi,
@@ -52,8 +52,7 @@ export default function CreateProductPage() {
     images: [] as { url: string; isPrimary: boolean }[],
     category: "",
     brand: "",
-    variants: [],
-    attributes: [],
+    attributes: [] as { key: string; value: string }[],
   });
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
     []
@@ -90,19 +89,19 @@ export default function CreateProductPage() {
       formData.append("image", file);
       formData.append("convertToWebp", "true");
       formData.append("folder", "products");
-      const response = await uploadImageApi(formData);
-
-      const imageUrl = response.data.secure_url;
-      setForm({
-        ...form,
+      // uploadImageApi now returns inner data (secure_url is at top level)
+      const result = await uploadImageApi(formData);
+      const uploadedUrl = result.secure_url;
+      setForm((prev) => ({
+        ...prev,
         images: [
-          ...form.images,
-          { url: imageUrl, isPrimary: form.images.length === 0 },
+          ...prev.images,
+          { url: uploadedUrl, isPrimary: prev.images.length === 0 },
         ],
-      });
+      }));
       toast.success("Image uploaded successfully");
     } catch (error: any) {
-      toast.error(error.error || "Failed to upload image");
+      toast.error(error?.message || "Failed to upload image");
     }
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -163,6 +162,19 @@ export default function CreateProductPage() {
     }
   };
 
+  // Attribute helpers
+  const addAttribute = () =>
+    setForm((prev) => ({ ...prev, attributes: [...prev.attributes, { key: "", value: "" }] }));
+
+  const updateAttribute = (i: number, field: "key" | "value", val: string) => {
+    const updated = [...form.attributes];
+    updated[i] = { ...updated[i], [field]: val };
+    setForm((prev) => ({ ...prev, attributes: updated }));
+  };
+
+  const removeAttribute = (i: number) =>
+    setForm((prev) => ({ ...prev, attributes: prev.attributes.filter((_, idx) => idx !== i) }));
+
   const handleSave = async () => {
     setSaving(true);
     setError("");
@@ -172,18 +184,18 @@ export default function CreateProductPage() {
       const payload = {
         ...form,
         price: Number(form.price),
-        discountPrice: form.discountPrice
-          ? Number(form.discountPrice)
-          : undefined,
+        discountPrice: form.discountPrice ? Number(form.discountPrice) : undefined,
         stock: Number(form.stock),
         description,
+        attributes: form.attributes.filter((a) => a.key.trim() && a.value.trim()),
       };
       await createProductApi(payload);
       toast.success("Product created successfully");
       window.location.href = "/products";
     } catch (err: any) {
-      setError(err.message || "Failed to create product");
-      toast.error(err.message || "Failed to create product");
+      const msg = err?.response?.data?.message || err.message || "Failed to create product";
+      setError(msg);
+      toast.error(msg);
     }
     setSaving(false);
   };
@@ -479,6 +491,47 @@ export default function CreateProductPage() {
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Attributes Card */}
+          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Attributes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">Add product-level attributes (e.g. Material, Weight).</p>
+              {form.attributes.map((attr, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <Input
+                    placeholder="Key (e.g. Material)"
+                    value={attr.key}
+                    onChange={(e) => updateAttribute(i, "key", e.target.value)}
+                  />
+                  <Input
+                    placeholder="Value (e.g. Cotton)"
+                    value={attr.value}
+                    onChange={(e) => updateAttribute(i, "value", e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-destructive hover:bg-destructive/10"
+                    onClick={() => removeAttribute(i)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-dashed"
+                onClick={addAttribute}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Add Attribute
+              </Button>
             </CardContent>
           </Card>
         </div>

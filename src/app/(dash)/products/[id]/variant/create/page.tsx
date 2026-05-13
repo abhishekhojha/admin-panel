@@ -72,14 +72,13 @@ export default function CreateVariantPage() {
       fd.append("convertToWebp", "true");
       fd.append("folder", "variants");
 
-      const res = await uploadImageApi(fd);
-      const imageUrl = res.data.secure_url;
-
-      setForm({ ...form, image: imageUrl });
+      // uploadImageApi returns inner data directly after interceptor unwrap
+      const result = await uploadImageApi(fd);
+      setForm((prev) => ({ ...prev, image: result.secure_url }));
 
       toast.success("Image uploaded");
     } catch (err: any) {
-      toast.error(err.error || "Failed to upload image");
+      toast.error(err?.message || "Failed to upload image");
     }
 
     setUploading(false);
@@ -118,27 +117,31 @@ export default function CreateVariantPage() {
 
   // ------------------ SAVE VARIANT ----------------------
   const handleSave = async () => {
+    if (form.attributes.filter((a) => a.key.trim() && a.value.trim()).length === 0) {
+      toast.error("At least one attribute is required (e.g. Color: Red)");
+      return;
+    }
     setSaving(true);
     setError("");
 
     try {
       const payload = {
         price: Number(form.price),
-        discountPrice: form.discountPrice
-          ? Number(form.discountPrice)
-          : undefined,
+        discountPrice: form.discountPrice ? Number(form.discountPrice) : undefined,
         stock: Number(form.stock),
-        attributes: form.attributes,
+        attributes: form.attributes.filter((a) => a.key.trim() && a.value.trim()),
         image: form.image || undefined,
-        SKU: form.SKU,
+        SKU: form.SKU || undefined,
       };
 
       await createVariantApi(productId, payload);
 
-      toast.success("Variant created");
+      toast.success("Variant created successfully");
       router.push(`/products/${productId}`);
     } catch (err: any) {
-      setError(err.error || "Failed to create variant");
+      const msg = err?.response?.data?.message || err?.message || "Failed to create variant";
+      setError(msg);
+      toast.error(msg);
     }
 
     setSaving(false);

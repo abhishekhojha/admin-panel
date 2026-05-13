@@ -53,6 +53,7 @@ export const completeProfile = createAsyncThunk(
   }
 );
 
+
 export const getProfile = createAsyncThunk(
   "auth/getProfile",
   async (_, { getState, rejectWithValue }) => {

@@ -1,6 +1,8 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SiteHeader } from "@/components/layout/site-header";
 import ClientLayout from "./clientLayout";
+
 export default function DashLayout({
   children,
 }: {
@@ -9,13 +11,12 @@ export default function DashLayout({
   return (
     <div className="[--header-height:calc(theme(spacing.14))] relative">
       <ClientLayout>
-        <SidebarProvider className="flex flex-col">
-          <div className="lg:grid lg:grid-cols-[250px_1fr]">
-            <AppSidebar />
-            <SidebarInset>
-              <div className="p-4 md:p-6 overflow-hidden">{children}</div>
-            </SidebarInset>
-          </div>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <SiteHeader />
+            <div className="p-4 md:p-6 overflow-hidden">{children}</div>
+          </SidebarInset>
         </SidebarProvider>
       </ClientLayout>
     </div>

@@ -65,14 +65,13 @@ export default function CreateVariantPage() {
       fd.append("convertToWebp", "true");
       fd.append("folder", "variants");
 
-      const res = await uploadImageApi(fd);
-      const imageUrl = res.data.secure_url;
-
-      setForm({ ...form, image: imageUrl });
+      // uploadImageApi returns inner data directly after interceptor unwrap
+      const result = await uploadImageApi(fd);
+      setForm((prev) => ({ ...prev, image: result.secure_url }));
 
       toast.success("Image uploaded");
     } catch (err: any) {
-      toast.error(err.error || "Failed to upload image");
+      toast.error(err?.message || "Failed to upload image");
     }
 
     setUploading(false);
