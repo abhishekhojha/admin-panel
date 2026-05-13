@@ -10,4 +10,5 @@ export const ENDPOINTS = {
     ORDERS: "/orders",
     COUPONS: "/coupons",
     SECTIONS: "/sections",
+    SETTINGS: "/settings",
 };

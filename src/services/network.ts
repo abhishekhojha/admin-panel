@@ -211,3 +211,14 @@ export const deleteSectionApi = async (id: string) => {
   const response = await axoios.delete(`${ENDPOINTS.SECTIONS}/${id}`);
   return response.data;
 }
+
+// settings service
+export const fetchSettingsApi = async () => {
+  const response = await axoios.get(ENDPOINTS.SETTINGS);
+  return response.data;
+}
+
+export const updateSettingsApi = async (settingsData: any) => {
+  const response = await axoios.put(ENDPOINTS.SETTINGS, settingsData);
+  return response.data;
+}

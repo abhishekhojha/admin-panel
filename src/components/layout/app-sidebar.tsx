@@ -105,6 +105,12 @@ const data = {
           icon: Shield,
           permission: "MANAGE_ROLES",
         },
+        {
+          title: "Settings",
+          url: "/settings",
+          icon: Settings2,
+          permission: "MANAGE_SETTINGS",
+        },
       ],
     },
     {
