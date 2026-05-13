@@ -12,13 +12,12 @@ import {
   ChevronRight,
   Trash2,
   Eye,
-  Search,
   Filter,
   MoreHorizontal,
+  CreditCard,
+  Pencil,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -42,39 +41,72 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  fetchOrdersApi,
-  updateOrderStatusApi,
-  deleteOrderApi,
-} from "@/services/network";
+import { Badge } from "@/components/ui/badge";
+import { fetchOrdersApi, deleteOrderApi } from "@/services/network";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import OrderUpdateDialog from "./OrderUpdateDialog";
+
+// Backend enum: pending | paid | shipped | delivered | cancelled
+type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "cancelled";
 
 interface Order {
   _id: string;
   user: { name: string; email: string } | string;
   grandTotal: number;
-  status: string;
+  status: OrderStatus;
+  paymentStatus?: string;
   payment: { method: string };
   shipping: { method: string };
+  trackingNumber?: string;
+  carrier?: string;
   createdAt: string;
 }
 
-function statusIcon(status: string) {
-  switch (status) {
-    case "pending":
-      return <Clock className="text-yellow-500" size={16} />;
-    case "processing":
-      return <Clock className="text-orange-500" size={16} />;
-    case "shipped":
-      return <Truck className="text-blue-500" size={16} />;
-    case "delivered":
-      return <BadgeCheck className="text-green-500" size={16} />;
-    case "cancelled":
-      return <XCircle className="text-red-500" size={16} />;
-    default:
-      return null;
-  }
+function statusBadge(status: string) {
+  const map: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
+    pending: {
+      label: "Pending",
+      className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+      icon: <Clock size={12} />,
+    },
+    paid: {
+      label: "Paid",
+      className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      icon: <CreditCard size={12} />,
+    },
+    shipped: {
+      label: "Shipped",
+      className: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
+      icon: <Truck size={12} />,
+    },
+    delivered: {
+      label: "Delivered",
+      className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      icon: <BadgeCheck size={12} />,
+    },
+    cancelled: {
+      label: "Cancelled",
+      className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+      icon: <XCircle size={12} />,
+    },
+  };
+
+  const config = map[status] || {
+    label: status,
+    className: "bg-muted text-muted-foreground",
+    icon: null,
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${config.className}`}
+    >
+      {config.icon}
+      {config.label}
+    </span>
+  );
 }
 
 export default function OrderPage() {
@@ -86,6 +118,10 @@ export default function OrderPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [totalOrders, setTotalOrders] = useState(0);
 
+  // Update dialog state
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -94,9 +130,9 @@ export default function OrderPage() {
         query += `&status=${statusFilter}`;
       }
       const data = await fetchOrdersApi(query);
-      setOrders(data.orders);
-      setTotalPages(data.pagination.pages);
-      setTotalOrders(data.pagination.total);
+      setOrders(data.orders || []);
+      setTotalPages(data.pagination?.pages || 1);
+      setTotalOrders(data.pagination?.total || 0);
     } catch (err: any) {
       setError("Failed to fetch orders");
     } finally {
@@ -108,22 +144,19 @@ export default function OrderPage() {
     fetchOrders();
   }, [page, statusFilter]);
 
-  const handleStatusUpdate = async (id: string, newStatus: string) => {
-    try {
-      await updateOrderStatusApi(id, { status: newStatus });
-      fetchOrders();
-    } catch (err) {
-      alert("Failed to update status");
-    }
+  const handleOpenUpdateDialog = (order: Order) => {
+    setSelectedOrder(order);
+    setUpdateDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this order?")) return;
     try {
       await deleteOrderApi(id);
+      toast.success("Order deleted");
       fetchOrders();
     } catch (err) {
-      alert("Failed to delete order");
+      toast.error("Failed to delete order");
     }
   };
 
@@ -134,6 +167,7 @@ export default function OrderPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
@@ -152,10 +186,7 @@ export default function OrderPage() {
       <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-4">
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="relative w-full md:w-96">
-              {/* Placeholder for search if needed later, currently just title */}
-              <CardTitle>Recent Orders</CardTitle>
-            </div>
+            <CardTitle>Recent Orders</CardTitle>
 
             <div className="flex items-center gap-2 w-full md:w-auto">
               {/* Mobile Filter Sheet */}
@@ -169,9 +200,7 @@ export default function OrderPage() {
                   <SheetContent>
                     <SheetHeader>
                       <SheetTitle>Filters</SheetTitle>
-                      <SheetDescription>
-                        Filter orders by status
-                      </SheetDescription>
+                      <SheetDescription>Filter orders by status</SheetDescription>
                     </SheetHeader>
                     <div className="flex flex-col gap-4 mt-4">
                       <div className="space-y-2">
@@ -189,9 +218,7 @@ export default function OrderPage() {
                           <SelectContent>
                             <SelectItem value="all">All Status</SelectItem>
                             <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="processing">
-                              Processing
-                            </SelectItem>
+                            <SelectItem value="paid">Paid</SelectItem>
                             <SelectItem value="shipped">Shipped</SelectItem>
                             <SelectItem value="delivered">Delivered</SelectItem>
                             <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -225,7 +252,7 @@ export default function OrderPage() {
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
                     <SelectItem value="shipped">Shipped</SelectItem>
                     <SelectItem value="delivered">Delivered</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -246,6 +273,7 @@ export default function OrderPage() {
             </div>
           </div>
         </CardHeader>
+
         <CardContent>
           {loading ? (
             <div className="flex justify-center py-10">
@@ -261,7 +289,7 @@ export default function OrderPage() {
               <div className="relative w-full overflow-auto">
                 <table className="w-full caption-bottom text-sm">
                   <thead className="[&_tr]:border-b">
-                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                    <tr className="border-b transition-colors hover:bg-muted/50">
                       <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                         Order ID
                       </th>
@@ -278,6 +306,9 @@ export default function OrderPage() {
                         Payment
                       </th>
                       <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Tracking
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                         Date
                       </th>
                       <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
@@ -289,7 +320,7 @@ export default function OrderPage() {
                     {orders.map((order) => (
                       <tr
                         key={order._id}
-                        className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                        className="border-b transition-colors hover:bg-muted/50"
                       >
                         <td className="p-4 align-middle font-mono text-xs">
                           {order._id.substring(0, 8)}...
@@ -309,47 +340,41 @@ export default function OrderPage() {
                           </div>
                         </td>
                         <td className="p-4 align-middle font-semibold">
-                          ₹{order.grandTotal}
+                          ₹{order.grandTotal?.toFixed(2)}
                         </td>
                         <td className="p-4 align-middle">
-                          <Select
-                            defaultValue={order.status}
-                            onValueChange={(val) =>
-                              handleStatusUpdate(order._id, val)
-                            }
-                          >
-                            <SelectTrigger className="h-8 w-[140px] border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:ring-0 focus:ring-offset-0">
-                              <div className="flex items-center gap-2">
-                                {statusIcon(order.status)}
-                                <span className="capitalize text-xs font-semibold">
-                                  {order.status}
-                                </span>
-                              </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="processing">
-                                Processing
-                              </SelectItem>
-                              <SelectItem value="shipped">Shipped</SelectItem>
-                              <SelectItem value="delivered">
-                                Delivered
-                              </SelectItem>
-                              <SelectItem value="cancelled">
-                                Cancelled
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          {statusBadge(order.status)}
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex flex-col gap-1">
                             <span className="text-xs font-medium capitalize">
-                              {order.payment.method}
+                              {order.payment?.method || "—"}
                             </span>
-                            <span className="text-[10px] text-muted-foreground capitalize">
-                              {order.shipping.method}
-                            </span>
+                            {order.paymentStatus && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] w-fit capitalize"
+                              >
+                                {order.paymentStatus}
+                              </Badge>
+                            )}
                           </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          {order.trackingNumber ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs font-mono font-medium">
+                                {order.trackingNumber}
+                              </span>
+                              {order.carrier && (
+                                <span className="text-[10px] text-muted-foreground capitalize">
+                                  {order.carrier}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
                         </td>
                         <td className="p-4 align-middle text-xs text-muted-foreground">
                           {new Date(order.createdAt).toLocaleDateString()}
@@ -364,12 +389,12 @@ export default function OrderPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/orders/${order._id}`}>
-                                <DropdownMenuItem>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Details
-                                </DropdownMenuItem>
-                              </Link>
+                              <DropdownMenuItem
+                                onClick={() => handleOpenUpdateDialog(order)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Update Order
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="text-red-600"
@@ -386,7 +411,7 @@ export default function OrderPage() {
                     {orders.length === 0 && (
                       <tr>
                         <td
-                          colSpan={7}
+                          colSpan={8}
                           className="h-24 text-center text-muted-foreground"
                         >
                           No orders found
@@ -427,6 +452,16 @@ export default function OrderPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Order Update Dialog */}
+      <OrderUpdateDialog
+        open={updateDialogOpen}
+        onOpenChange={setUpdateDialogOpen}
+        orderId={selectedOrder?._id || null}
+        currentStatus={selectedOrder?.status || "pending"}
+        currentPaymentStatus={selectedOrder?.paymentStatus}
+        onSuccess={fetchOrders}
+      />
     </div>
   );
 }

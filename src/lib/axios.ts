@@ -14,7 +14,14 @@ instance.interceptors.request.use((config) => {
 });
 
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Unwrap standardized API envelope: { success, message, data: {...} }
+    // so all service calls receive the inner `data` payload directly
+    if (response.data && typeof response.data === "object" && "data" in response.data) {
+      return { ...response, data: response.data.data };
+    }
+    return response;
+  },
   (error) => {
     if (
       typeof window !== "undefined" &&

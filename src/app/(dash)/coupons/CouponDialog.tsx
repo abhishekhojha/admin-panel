@@ -84,8 +84,14 @@ export default function CouponDialog({
     setLoading(true);
 
     try {
+      // Backend requires expiryDate as a full ISO 8601 datetime string
+      const expiryISO = formData.expiryDate
+        ? new Date(formData.expiryDate + "T23:59:59.000Z").toISOString()
+        : "";
+
       const payload = {
         ...formData,
+        expiryDate: expiryISO,
         discountValue: Number(formData.discountValue),
         minOrderValue: Number(formData.minOrderValue),
         maxDiscount: formData.maxDiscount
