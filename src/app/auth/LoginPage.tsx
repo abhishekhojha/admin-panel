@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { sendOtp, loginWithPassword, setIdentifier } from "../../store/auth";
 import {
@@ -89,7 +90,12 @@ export default function LoginPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link href="/auth/forgot-password" className="text-sm font-medium text-primary hover:underline" tabIndex={-1}>
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input

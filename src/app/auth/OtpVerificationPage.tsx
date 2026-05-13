@@ -17,12 +17,25 @@ export default function OtpVerificationPage() {
   const { loading, error, identifier } = useAppSelector((state) => state.auth);
   const [otpValue, setOtpValue] = useState("");
 
+  const [timer, setTimer] = useState(30);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
   const handleVerify = () => {
     dispatch(verifyOtp({ identifier, otp: otpValue }));
   };
 
   const handleResend = () => {
     dispatch(sendOtp(identifier));
+    setTimer(30);
   };
 
   // Fallback for simple input if InputOTP is not available or complex to setup quickly without installing
@@ -107,10 +120,10 @@ export default function OtpVerificationPage() {
         <Button
           variant="ghost"
           onClick={handleResend}
-          disabled={loading}
+          disabled={loading || timer > 0}
           className="w-full text-muted-foreground hover:text-foreground"
         >
-          Resend Code
+          {timer > 0 ? `Resend Code in ${timer}s` : "Resend Code"}
         </Button>
       </div>
 
