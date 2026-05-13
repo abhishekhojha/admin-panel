@@ -45,6 +45,7 @@ import { Badge } from "@/components/ui/badge";
 import { fetchOrdersApi, deleteOrderApi } from "@/services/network";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import OrderUpdateDialog from "./OrderUpdateDialog";
 
@@ -166,7 +167,7 @@ export default function OrderPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -185,12 +186,12 @@ export default function OrderPage() {
 
       <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+          <div className="flex flex-col xl:flex-row gap-4 justify-between items-center">
             <CardTitle>Recent Orders</CardTitle>
 
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex items-center flex-wrap gap-2 w-full xl:w-auto">
               {/* Mobile Filter Sheet */}
-              <div className="md:hidden w-full">
+              <div className="xl:hidden w-full">
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="w-full">
@@ -202,7 +203,7 @@ export default function OrderPage() {
                       <SheetTitle>Filters</SheetTitle>
                       <SheetDescription>Filter orders by status</SheetDescription>
                     </SheetHeader>
-                    <div className="flex flex-col gap-4 mt-4">
+                    <div className="flex flex-col gap-4 mt-4 p-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Status</label>
                         <Select
@@ -238,7 +239,7 @@ export default function OrderPage() {
               </div>
 
               {/* Desktop Filters */}
-              <div className="hidden md:flex gap-2 items-center">
+              <div className="hidden xl:flex flex-wrap gap-2 items-center">
                 <Select
                   value={statusFilter}
                   onValueChange={(val) => {
@@ -276,8 +277,52 @@ export default function OrderPage() {
 
         <CardContent>
           {loading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            <div className="rounded-md border bg-background">
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="[&_tr]:border-b">
+                    <tr className="border-b transition-colors hover:bg-muted/50">
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Order ID</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Customer</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Total</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Payment</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Tracking</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Date</th>
+                      <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b transition-colors hover:bg-muted/50">
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-16" /></td>
+                        <td className="p-4 align-middle">
+                          <div className="flex flex-col gap-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-32" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-16" /></td>
+                        <td className="p-4 align-middle"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                        <td className="p-4 align-middle">
+                          <div className="flex flex-col gap-2">
+                            <Skeleton className="h-4 w-12" />
+                            <Skeleton className="h-3 w-16 rounded-full" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex flex-col gap-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-20" /></td>
+                        <td className="p-4 align-middle text-right"><Skeleton className="h-8 w-8 rounded-md ml-auto" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : error ? (
             <Alert variant="destructive">

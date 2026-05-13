@@ -150,7 +150,7 @@ export default function EditVariantPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1000px] mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-[1000px] mx-auto w-full">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ChevronLeft className="h-4 w-4" />

@@ -15,7 +15,7 @@ export default function DashLayout({
           <AppSidebar />
           <SidebarInset>
             <SiteHeader />
-            <div className="p-4 md:p-6 overflow-hidden">{children}</div>
+            <div className="flex-1 w-full p-4 md:p-6 overflow-x-hidden">{children}</div>
           </SidebarInset>
         </SidebarProvider>
       </ClientLayout>

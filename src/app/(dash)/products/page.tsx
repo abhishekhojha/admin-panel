@@ -50,6 +50,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   fetchProductsApi,
   deleteProductApi,
@@ -212,7 +213,7 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Products</h1>
@@ -237,8 +238,8 @@ export default function ProductsPage() {
 
       <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="relative w-full md:w-96">
+          <div className="flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+            <div className="relative w-full xl:w-96">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search title, SKU, brand..."
@@ -248,9 +249,9 @@ export default function ProductsPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex items-center flex-wrap gap-2 w-full xl:w-auto">
               {/* Mobile Filter Sheet */}
-              <div className="md:hidden w-full">
+              <div className="xl:hidden w-full">
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="w-full">
@@ -262,7 +263,7 @@ export default function ProductsPage() {
                       <SheetTitle>Filters</SheetTitle>
                       <SheetDescription>Refine product list</SheetDescription>
                     </SheetHeader>
-                    <div className="flex flex-col gap-4 mt-4">
+                    <div className="flex flex-col gap-4 mt-4 p-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Category</label>
                         <Select
@@ -327,7 +328,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Desktop Filters */}
-              <div className="hidden md:flex gap-2 items-center">
+              <div className="hidden xl:flex flex-wrap gap-2 items-center">
                 <Select
                   value={category}
                   onValueChange={(val) => setCategory(val)}
@@ -376,8 +377,63 @@ export default function ProductsPage() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            <div className="rounded-md border bg-background">
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="[&_tr]:border-b">
+                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Product
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Category
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Brand
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Price
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Stock
+                      </th>
+                      <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-12 w-12 rounded-lg" />
+                            <div className="flex flex-col gap-2">
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-3 w-20" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <Skeleton className="h-6 w-24 rounded-full" />
+                        </td>
+                        <td className="p-4 align-middle">
+                          <Skeleton className="h-4 w-20" />
+                        </td>
+                        <td className="p-4 align-middle">
+                          <Skeleton className="h-4 w-16" />
+                        </td>
+                        <td className="p-4 align-middle">
+                          <Skeleton className="h-6 w-20 rounded-full" />
+                        </td>
+                        <td className="p-4 align-middle text-right">
+                          <Skeleton className="h-8 w-8 rounded-md ml-auto" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="rounded-md border bg-background">
@@ -451,13 +507,12 @@ export default function ProductsPage() {
                         </td>
                         <td className="p-4 align-middle">
                           <div
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent ${
-                              p.stock > 10
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent ${p.stock > 10
                                 ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                                 : p.stock > 0
-                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                            }`}
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              }`}
                           >
                             {p.stock} in stock
                           </div>

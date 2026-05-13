@@ -57,6 +57,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface User {
   _id: string;
@@ -176,7 +177,7 @@ export default function UserPage() {
         assignRoleApi={assignRoleApi}
       />
 
-      <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+      <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Users</h1>
@@ -191,8 +192,8 @@ export default function UserPage() {
 
         <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
           <CardHeader className="pb-4">
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-              <div className="relative w-full md:w-96">
+            <div className="flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+              <div className="relative w-full xl:w-96">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -206,9 +207,9 @@ export default function UserPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-2 w-full md:w-auto">
+              <div className="flex items-center flex-wrap gap-2 w-full xl:w-auto">
                 {/* Mobile Filter Sheet */}
-                <div className="md:hidden w-full">
+                <div className="xl:hidden w-full">
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button variant="outline" className="w-full">
@@ -277,7 +278,7 @@ export default function UserPage() {
                 </div>
 
                 {/* Desktop Filters */}
-                <div className="hidden md:flex gap-2 items-center">
+                <div className="hidden xl:flex flex-wrap gap-2 items-center">
                   <Select
                     value={role}
                     onValueChange={(val) => {
@@ -367,13 +368,34 @@ export default function UserPage() {
                   </thead>
                   <tbody className="[&_tr:last-child]:border-0">
                     {loading ? (
-                      <tr>
-                        <td colSpan={6} className="h-24 text-center">
-                          <div className="flex justify-center items-center">
-                            <Loader2 className="animate-spin h-6 w-6 text-primary" />
-                          </div>
-                        </td>
-                      </tr>
+                      [...Array(5)].map((_, i) => (
+                        <tr key={i} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                          <td className="p-4 align-middle">
+                            <div className="flex items-center gap-3">
+                              <Skeleton className="h-9 w-9 rounded-full" />
+                              <div className="flex flex-col gap-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-3 w-32 md:hidden" />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4 align-middle">
+                            <div className="flex flex-col gap-2">
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                          </td>
+                          <td className="p-4 align-middle"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                          <td className="p-4 align-middle"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                          <td className="p-4 align-middle">
+                            <div className="flex items-center gap-2">
+                              <Skeleton className="h-4 w-4 rounded-full" />
+                              <Skeleton className="h-3 w-16" />
+                            </div>
+                          </td>
+                          <td className="p-4 align-middle text-right"><Skeleton className="h-8 w-8 rounded-md ml-auto" /></td>
+                        </tr>
+                      ))
                     ) : users.length === 0 ? (
                       <tr>
                         <td

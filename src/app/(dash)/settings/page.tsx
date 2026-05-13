@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { fetchSettingsApi, updateSettingsApi } from "@/services/network";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
   const [form, setForm] = useState({
@@ -56,8 +57,41 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="max-w-4xl mx-auto py-6 space-y-6">
+        <div className="flex items-center justify-between mb-6">
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+              <div className="grid gap-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }

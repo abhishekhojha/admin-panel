@@ -34,6 +34,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useAppSelector } from "@/store";
@@ -112,25 +115,7 @@ const data = {
           permission: "MANAGE_SETTINGS",
         },
       ],
-    },
-    {
-      title: "Loan Management",
-      url: "#",
-      icon: CreditCard,
-      isActive: false,
-      items: [
-        {
-          title: "Applications",
-          url: "#", // Placeholder
-          icon: FileText,
-        },
-        {
-          title: "Approvals",
-          url: "#", // Placeholder
-          icon: FileText,
-        },
-      ],
-    },
+    }
   ],
   navSecondary: [
     {
@@ -148,7 +133,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, loading } = useAppSelector((state) => state.auth);
 
   React.useEffect(() => {
     dispatch(getProfile());
@@ -217,8 +202,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={filteredNavMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {loading || !user ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Loading</SidebarGroupLabel>
+            <SidebarMenu>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <SidebarMenuItem key={index}>
+                  <SidebarMenuSkeleton showIcon />
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        ) : (
+          <>
+            <NavMain items={filteredNavMain} />
+            <NavSecondary items={data.navSecondary} className="mt-auto" />
+          </>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

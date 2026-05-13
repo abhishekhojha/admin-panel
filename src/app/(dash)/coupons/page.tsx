@@ -44,6 +44,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Define Coupon Type
 interface Coupon {
@@ -120,7 +121,7 @@ export default function CouponsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Coupons</h1>
@@ -143,8 +144,8 @@ export default function CouponsPage() {
 
       <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="relative w-full md:w-96">
+          <div className="flex flex-col xl:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full xl:w-96">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search coupons..."
@@ -157,9 +158,9 @@ export default function CouponsPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex items-center flex-wrap gap-2 w-full xl:w-auto">
               {/* Mobile Filter Sheet */}
-              <div className="md:hidden w-full">
+              <div className="xl:hidden w-full">
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="w-full">
@@ -206,7 +207,7 @@ export default function CouponsPage() {
               </div>
 
               {/* Desktop Filters */}
-              <div className="hidden md:flex gap-2 items-center">
+              <div className="hidden xl:flex flex-wrap gap-2 items-center">
                 <Select
                   value={statusFilter}
                   onValueChange={(val) => {
@@ -269,11 +270,22 @@ export default function CouponsPage() {
                 </thead>
                 <tbody className="[&_tr:last-child]:border-0">
                   {loading ? (
-                    <tr>
-                      <td colSpan={7} className="h-24 text-center">
-                        <Loader2 className="animate-spin h-6 w-6 mx-auto text-primary" />
-                      </td>
-                    </tr>
+                    [...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b transition-colors hover:bg-muted/50">
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4" />
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-16" /></td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-16" /></td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-12" /></td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-20" /></td>
+                        <td className="p-4 align-middle"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                        <td className="p-4 align-middle text-right"><Skeleton className="h-8 w-8 rounded-md ml-auto" /></td>
+                      </tr>
+                    ))
                   ) : coupons.length === 0 ? (
                     <tr>
                       <td

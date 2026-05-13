@@ -242,7 +242,7 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
       <div className="flex items-center gap-4">
         <Link href="/products">
           <Button variant="outline" size="icon">

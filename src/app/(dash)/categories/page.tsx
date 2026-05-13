@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Category {
   _id: string;
@@ -85,7 +86,7 @@ export default function CategoryPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
@@ -119,8 +120,36 @@ export default function CategoryPage() {
             </Alert>
           )}
           {loading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            <div className="rounded-md border bg-background">
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="[&_tr]:border-b">
+                    <tr className="border-b transition-colors hover:bg-muted/50">
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Slug</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Parent</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                      <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b transition-colors hover:bg-muted/50">
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-9 w-9 rounded-lg" />
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle"><Skeleton className="h-6 w-20 rounded-md" /></td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-24" /></td>
+                        <td className="p-4 align-middle"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                        <td className="p-4 align-middle text-right"><Skeleton className="h-8 w-8 rounded-md ml-auto" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="rounded-md border bg-background">

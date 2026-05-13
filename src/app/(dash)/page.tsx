@@ -173,7 +173,7 @@ export default function DashboardPage() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
         {/* Revenue Chart */}
-        <Card className="col-span-1 lg:col-span-4 shadow-sm">
+        <Card className="col-span-1 lg:col-span-4 shadow-sm min-w-0">
           <CardHeader>
             <CardTitle>Revenue vs Loan Disbursal</CardTitle>
           </CardHeader>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Loan Status Chart */}
-        <Card className="col-span-1 lg:col-span-3 shadow-sm">
+        <Card className="col-span-1 lg:col-span-3 shadow-sm min-w-0">
           <CardHeader>
             <CardTitle>Loan Application Status</CardTitle>
           </CardHeader>
@@ -312,7 +312,7 @@ export default function DashboardPage() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Link href="/orders" className="block">
                 <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                   <ShoppingCart className="h-8 w-8 mb-2 text-blue-500" />

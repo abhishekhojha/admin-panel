@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Role {
   _id: string;
@@ -84,7 +85,7 @@ export default function RolePage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -121,8 +122,40 @@ export default function RolePage() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            <div className="rounded-md border bg-background">
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="[&_tr]:border-b">
+                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Role Name</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Description</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Permissions</th>
+                      <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4" />
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle"><Skeleton className="h-4 w-48" /></td>
+                        <td className="p-4 align-middle">
+                          <div className="flex flex-wrap gap-1">
+                            <Skeleton className="h-5 w-16 rounded-full" />
+                            <Skeleton className="h-5 w-20 rounded-full" />
+                            <Skeleton className="h-5 w-12 rounded-full" />
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle text-right"><Skeleton className="h-8 w-8 rounded-md ml-auto" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="rounded-md border bg-background">
